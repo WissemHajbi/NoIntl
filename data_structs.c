@@ -57,11 +57,35 @@ int da_append(DynamicArray *arr, const char *str) {
 }
 
 void da_free(DynamicArray *arr) {
+    if (!arr) return;
     /* Step 1: Free each individual string */
+    for(size_t i = 0; i < arr->size; i++)
+    {
+      free(arr->strings[i]);
+    }
     /* Step 2: Free the array of pointers */
+   free(arr->strings);
     /* Step 3: Free the structure itself */
+  free(arr);
 }
 
+
 void da_print(const DynamicArray *arr) {
-    /* Debug function to see our array contents */
+    if (!arr) {
+        printf("Array is NULL\n");
+        return;
+    }
+    
+    printf("Dynamic Array:\n");
+    printf("  Size: %zu\n", arr->size);
+    printf("  Capacity: %zu\n", arr->capacity);
+    printf("  Contents:\n");
+    
+    if (arr->size == 0) {
+        printf("    (empty)\n");
+    } else {
+        for (size_t i = 0; i < arr->size; i++) {
+            printf("    [%zu]: \"%s\"\n", i, arr->strings[i]);
+        }
+    }
 }

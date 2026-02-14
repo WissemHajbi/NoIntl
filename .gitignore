@@ -1,0 +1,31 @@
+# Compiled binaries
+*.exe
+*.out
+*.o
+*.obj
+
+# Debug files
+*.pdb
+*.dSYM/
+
+# IDE files
+.vscode/
+.vs/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Agent context files (for development, not for public repo)
+AGENT_PROGRESS.md
+
+# Temporary test files
+test_*
+temp_*
+
+# Memory debugging outputs
+valgrind-out.txt
+debug_output.txt
