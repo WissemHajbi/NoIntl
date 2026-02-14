@@ -69,7 +69,6 @@ void da_free(DynamicArray *arr) {
   free(arr);
 }
 
-
 void da_print(const DynamicArray *arr) {
     if (!arr) {
         printf("Array is NULL\n");
