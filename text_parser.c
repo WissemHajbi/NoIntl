@@ -28,15 +28,44 @@ void parser_config_free(ParserConfig *config) {
 
 /* Step 4B: Detect untranslated JSX text patterns */
 
+/* Check if text is only whitespace/empty */
+int is_empty_or_whitespace(const char *text) {
+  if (!text || *text == '\0')
+    return 1;
+
+  for (size_t i = 0; text[i] != '\0'; i++) {
+    if (!isspace((unsigned char)text[i])) {
+      return 0; /* Found non-whitespace */
+    }
+  }
+  return 1; /* All whitespace */
+}
+
+/* Check if extracted text is actual content (not code artifacts) */
+int is_valid_jsx_content(const char *text) {
+  if (!text || is_empty_or_whitespace(text))
+    return 0;
+
+  /* Reject if contains code patterns */
+  if (strchr(text, '{') || strchr(text, '}') || 
+      strchr(text, '=') || strchr(text, ';')) {
+    return 0; /* Looks like code, not text */
+  }
+
+  /* Reject if starts with JSX patterns */
+  if (text[0] == ')' || text[0] == ']') {
+    return 0; /* Starts with closing bracket */
+  }
+
+  return 1; /* Valid plain text content */
+}
+
 /* Pattern 1: >plain text< (JSX text node) */
 int is_untranslated_jsx_text(const char *text) {
-  /* Check if text is plain (no { } in it) */
-  /* If text contains {, it might be expressions like {variable}, {t(...)}, etc
-   */
-  /* We only flag if there's NO { } - meaning it's plain text */
-
-  if (!text || *text == '\0')
+  /* Skip whitespace-only content */
+  if (is_empty_or_whitespace(text)) {
     return 0;
+  }
 
   /* If text contains {, it's likely a JSX expression, not plain text */
   if (strchr(text, '{') != NULL) {
@@ -129,6 +158,24 @@ int extract_jsx_text(const char *content, size_t tag_pos, char *tag_name_out,
     return -1; /* No closing < found */
 
   size_t actual_text_len = pos - text_start;
+  
+  /* Step 5: Trim leading whitespace */
+  while (text_start < pos && isspace((unsigned char)content[text_start])) {
+    text_start++;
+    actual_text_len--;
+  }
+  
+  /* Step 6: Trim trailing whitespace */
+  while (actual_text_len > 0 && isspace((unsigned char)content[text_start + actual_text_len - 1])) {
+    actual_text_len--;
+  }
+  
+  /* Skip if only whitespace remains */
+  if (actual_text_len == 0) {
+    text_out[0] = '\0';
+    return 0;  /* Return 0 to indicate whitespace-only content */
+  }
+
   if (actual_text_len >= text_len)
     return -1; /* Text too long for buffer */
 
@@ -186,8 +233,9 @@ int scan_file_for_untranslated_jsx(const char *file_path,
                                        text_content, sizeof(text_content));
 
       if (text_len > 0) {
-        /* Check if text is untranslated AND within size limit */
-        if (is_untranslated_jsx_text(text_content) &&
+        /* Check if text is valid content AND untranslated AND within size limit */
+        if (is_valid_jsx_content(text_content) &&
+            is_untranslated_jsx_text(text_content) &&
             (size_t)text_len <= config->max_string_len) {
           
           /* Format result string */
@@ -198,20 +246,32 @@ int scan_file_for_untranslated_jsx(const char *file_path,
           /* Add to results array */
           da_append(results, result);
         }
-      }
 
-      /* Skip past the closing tag to find next < */
-      while (i < buffer->size && buffer->content[i] != '<') {
-        if (buffer->content[i] == '\n') {
-          line++;
-          column = 1;
-        } else {
-          column++;
+        /* Skip past the closing tag to find next < */
+        while (i < buffer->size && buffer->content[i] != '<') {
+          if (buffer->content[i] == '\n') {
+            line++;
+            column = 1;
+          } else {
+            column++;
+          }
+          i++;
         }
+      } else if (text_len == 0) {
+        /* Text was only whitespace - skip normally */
+        while (i < buffer->size && buffer->content[i] != '<') {
+          if (buffer->content[i] == '\n') {
+            line++;
+            column = 1;
+          } else {
+            column++;
+          }
+          i++;
+        }
+      } else {
+        /* extract_jsx_text failed (-1 returned) - skip this < and continue */
         i++;
       }
-
-      continue;
     }
 
     i++;

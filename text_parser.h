@@ -30,5 +30,7 @@ int extract_jsx_text(const char *content, size_t tag_close_pos,
                      char *tag_name_out, size_t tag_name_len,
                      char *text_out, size_t text_len);
 int is_jsx_expression(const char *text);  /* Has { } ? */
+int is_valid_jsx_content(const char *text); /* Plain text without code artifacts */
+int is_empty_or_whitespace(const char *text); /* Whitespace only */
 
 #endif
