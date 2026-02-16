@@ -92,45 +92,48 @@ int main(int argc, char *argv[]) {
     printf("✓ All files are properly translated!\n");
   } else {
     printf("✗ Files with untranslated text:\n\n");
-    
+
     const char *current_file = NULL;
-    
+
     for (size_t i = 0; i < problematic_files->size; i++) {
       char *result = problematic_files->strings[i];
-      
+
       /* Parse: filename:line:col: <tag> text_with_newlines */
       char *colon1 = strchr(result, ':');
-      if (!colon1) continue;
-      
+      if (!colon1)
+        continue;
+
       /* Extract filename */
       size_t filename_len = colon1 - result;
       char filename[512];
       strncpy(filename, result, filename_len);
       filename[filename_len] = '\0';
-      
+
       /* Extract line number (between first and second colon) */
       char *colon2 = strchr(colon1 + 1, ':');
-      if (!colon2) continue;
+      if (!colon2)
+        continue;
       char line_str[32];
       strncpy(line_str, colon1 + 1, colon2 - colon1 - 1);
       line_str[colon2 - colon1 - 1] = '\0';
       int line_num = atoi(line_str);
-      
+
       /* Extract text (after "> ") */
       char *text_start = strchr(colon2, '>');
-      if (!text_start) continue;
-      text_start += 2;  /* Skip "> " */
-      
+      if (!text_start)
+        continue;
+      text_start += 2; /* Skip "> " */
+
       /* Print file header if new file */
       if (!current_file || strcmp(current_file, filename) != 0) {
         printf("  - %s\n", filename);
         current_file = filename;
       }
-      
+
       /* Print the issue */
       printf("      Line %d: \"%s\"\n", line_num, text_start);
     }
-    
+
     printf("\nTotal issues found: %zu\n", problematic_files->size);
   }
 
