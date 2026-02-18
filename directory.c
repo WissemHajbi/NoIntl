@@ -109,7 +109,6 @@ int scan_directory_recursive(const char *path, const ScanConfig *config,
     if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
       continue;
     }
-
     /* Construct full path to entry */
     char full_path[PATH_MAX];
     int ret =
@@ -132,9 +131,7 @@ int scan_directory_recursive(const char *path, const ScanConfig *config,
     }
     /* If directory: recurse into it */
     else if (S_ISDIR(file_stat.st_mode)) {
-      if (config->follow_symlinks) {
-        scan_directory_recursive(full_path, config, results);
-      }
+      scan_directory_recursive(full_path, config, results);
     }
   }
 
