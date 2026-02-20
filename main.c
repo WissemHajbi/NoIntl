@@ -2,14 +2,29 @@
 #include "directory.h"
 #include "file_reader.h"
 #include "text_parser.h"
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define INITIAL_BUFFER_SIZE 4096 /* 4KB initial buffer */
 
+void display_banner() {
+  printf("\n");
+  printf("     _   _  ____  ___ _   _ _____ _                          \n");
+  printf("    |  \\| |/ __ \\|_ _| \\ | |_   _| |                         \n");
+  printf("    |  \\| | |  | | | |  \\| | | | | |                         \n");
+  printf("    | . ` | |  | | | | . ` | | | | |                         \n");
+  printf("    | |\\  | |__| |_|_| |\\  | | | | |___                      \n");
+  printf("    |_| \\_|\\____/|___|_| \\_| |_| |_____|                     \n");
+  printf("                                                              \n");
+  printf("                                        < by Wissem Hajbi >   \n");
+  printf("\n");
+}
+
 int main(int argc, char *argv[]) {
+  /* Display project banner */
+  display_banner();
+
   /* Step 1: Validate arguments */
   if (argc < 2) {
     fprintf(stderr, "Usage: %s <directory>\n", argv[0]);
