@@ -17,6 +17,7 @@ CLI Tool Structure:
 ```
 
 ### Compilation
+
 ```bash
 # Compile with warnings enabled
 gcc -Wall -Wextra -std=c99 -o scanner main.c data_structs.c
@@ -45,17 +46,15 @@ Scan Next.js projects for untranslated strings:
 
 > **"The best way to learn systems programming is to build something real, make mistakes, understand why they happened, and fix them properly."**
 
-**Built with 💻 and lots of ☕ **
-
+**Built with 💻 and lots of ☕**
 
 Todo List :
+
 - [x] update the program to search through nested folders so we can execute on root.
 - [ ] turn this into a cli
-- [ ] display a tag with my name in cli ( 3d cool tag like lazyvim's default page)
+- [x] display a tag with my name in cli ( 3d cool tag like lazyvim's default page)
 - [ ] create a clear presentation of the program's data structures and algorithm
 - [ ] update the algorithm of detecting static text to handle more complex situations like ( hooks , t.raw, t.rich ... )
 - [ ] add a functionality that looks for any intel translation like (t.("h")) that is not implemented from messages files ( can we use a hashmap for this ? )
 - [ ] create a seperate factory that returns only the correct function containing the right algorithm for the technolgy passed to the program as arg
 - [ ] share this in tech reddit, blogs , discord ...
-
-
