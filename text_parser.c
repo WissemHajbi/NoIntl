@@ -40,14 +40,52 @@ int is_empty_or_whitespace(const char *text) {
   return 1;
 }
 
+/* Returns 1 if str is a known TypeScript / JavaScript built-in type or
+   keyword that should never be flagged as untranslated human text.     */
+static int is_ts_type_keyword(const char *str, size_t len) {
+  static const char *const TS_KEYWORDS[] = {
+    /* TypeScript primitive & utility types */
+    "Promise", "void", "string", "number", "boolean", "object", "symbol",
+    "bigint", "never", "unknown", "any", "undefined", "null",
+    /* Generic utility types */
+    "Array", "Record", "Partial", "Required", "Readonly", "ReadonlyArray",
+    "Pick", "Omit", "Exclude", "Extract", "NonNullable", "ReturnType",
+    "InstanceType", "Parameters", "ConstructorParameters", "Awaited",
+    "Uppercase", "Lowercase", "Capitalize", "Uncapitalize",
+    /* React types */
+    "ReactNode", "ReactElement", "ReactChild", "ReactFragment",
+    "ReactPortal", "ReactDOM", "RefObject", "MutableRefObject",
+    "CSSProperties", "MouseEvent", "KeyboardEvent", "ChangeEvent",
+    "FormEvent", "FocusEvent", "SubmitEvent", "SyntheticEvent",
+    /* Common utility */
+    "UseFormReturn", "FieldValues", "Resolver", "DefaultValues",
+    "HTMLElement", "HTMLDivElement", "HTMLInputElement", "HTMLButtonElement",
+    "EventTarget", "NodeList", "Element", "Document", "Window",
+    NULL
+  };
+  char buf[128];
+  if (len == 0 || len >= sizeof(buf))
+    return 0;
+  strncpy(buf, str, len);
+  buf[len] = '\0';
+  for (int i = 0; TS_KEYWORDS[i] != NULL; i++) {
+    if (strcmp(buf, TS_KEYWORDS[i]) == 0)
+      return 1;
+  }
+  return 0;
+}
+
 /* Returns 1 if str looks like human-readable text:
    - at least 3 chars
    - starts with a letter
-   - has at least one space OR one uppercase letter                     */
+   - has at least one space OR one uppercase letter
+   - is not a known TypeScript / JS type keyword                        */
 int looks_like_human_text(const char *str, size_t len) {
   if (!str || len < 3)
     return 0;
   if (!isalpha((unsigned char)str[0]))
+    return 0;
+  if (is_ts_type_keyword(str, len))
     return 0;
   int has_space = 0, has_upper = 0;
   for (size_t i = 0; i < len; i++) {

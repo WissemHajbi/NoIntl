@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
   } else {
     printf("✗ Files with untranslated text:\n\n");
 
-    const char *current_file = NULL;
+    char current_file[512] = "";
 
     for (size_t i = 0; i < problematic_files->size; i++) {
       char *result = problematic_files->strings[i];
@@ -167,9 +167,10 @@ int main(int argc, char *argv[]) {
       char *text_start = gt + 2;
 
       /* Print file header when we encounter a new file */
-      if (!current_file || strcmp(current_file, filename) != 0) {
+      if (strcmp(current_file, filename) != 0) {
         printf("  \xE2\x96\xB8 %s\n", filename);
-        current_file = filename;
+        strncpy(current_file, filename, sizeof(current_file) - 1);
+        current_file[sizeof(current_file) - 1] = '\0';
       }
 
       printf("      Line %-4d  [%-20s]  \"%s\"\n", line_num, tag_display,
