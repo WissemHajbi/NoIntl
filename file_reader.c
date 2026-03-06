@@ -3,8 +3,8 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#define INITIAL_BUFFER_SIZE 4096         /* 4KB initial buffer */
-#define MAX_FILE_SIZE (10 * 1024 * 1024) /* 10MB safety limit */
+#define INITIAL_BUFFER_SIZE 4096          /* 4KB initial buffer */
+#define MAX_FILE_SIZE (100 * 1024 * 1024) /* 100MB safety limit */
 
 /* Step 3A: Buffer creation */
 FileBuffer *fb_create(size_t initial_capacity) {
@@ -58,8 +58,13 @@ int fb_read_file(const char *filepath, FileBuffer *buffer) {
   }
 
   if (file_stat.st_size > (off_t)buffer->capacity) {
-    fprintf(stderr, "Error: File larger than buffer capacity\n");
-    return -1;
+    char *new_content = realloc(buffer->content, (size_t)file_stat.st_size);
+    if (!new_content) {
+      fprintf(stderr, "Error: Failed to grow buffer for file\n");
+      return -1;
+    }
+    buffer->content = new_content;
+    buffer->capacity = (size_t)file_stat.st_size;
   }
 
   /* Step 4: Open file for reading */
