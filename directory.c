@@ -103,6 +103,11 @@ int scan_directory_recursive(const char *path, const ScanConfig *config,
     return -1;
   }
 
+  /* Directories to skip entirely (generated / vendor / cache) */
+  static const char *SKIP_DIRS[] = {"node_modules", ".next", "dist",
+                                    "build",        ".git",  ".cache",
+                                    "coverage",     "out",   NULL};
+
   struct dirent *entry;
   while ((entry = readdir(dir)) != NULL) {
     /* Skip . and .. entries */
@@ -123,15 +128,29 @@ int scan_directory_recursive(const char *path, const ScanConfig *config,
       continue;
     }
 
-    /* If regular file: check extension and add if match */
+    /* If regular file: check extension and skip config/test/spec files */
     if (S_ISREG(file_stat.st_mode)) {
+      /* Skip *.config.*, *.test.*, *.spec.*, and files under messages/ */
+      if (strstr(entry->d_name, ".config.") ||
+          strstr(entry->d_name, ".test.") || strstr(entry->d_name, ".spec.")) {
+        continue;
+      }
       if (ext_filter_matches(config->filter, entry->d_name) >= 0) {
         da_append(results, full_path);
       }
     }
-    /* If directory: recurse into it */
+    /* If directory: skip known framework/build dirs, otherwise recurse */
     else if (S_ISDIR(file_stat.st_mode)) {
-      scan_directory_recursive(full_path, config, results);
+      int skip = 0;
+      for (int di = 0; SKIP_DIRS[di]; di++) {
+        if (strcmp(entry->d_name, SKIP_DIRS[di]) == 0) {
+          skip = 1;
+          break;
+        }
+      }
+      if (!skip) {
+        scan_directory_recursive(full_path, config, results);
+      }
     }
   }
 
